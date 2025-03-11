@@ -49,6 +49,7 @@ end
 gem "dotenv-rails", "~> 3.1"
 
 # Authentication with JWT
+gem 'devise'
 gem 'devise_token_auth'
 
 # Authorization

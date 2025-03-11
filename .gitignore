@@ -30,3 +30,27 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+
+# Ignore YARD documentation
+/.yardoc/
+/doc/yard/
+
+# Ignore Redis dump file
+dump.rdb
+
+# Ignore test coverage
+/coverage/
+
+# Ignore node modules
+/node_modules/
+
+# Ignore precompiled assets
+/public/assets/
+/public/packs/
+
+# Ignore authentication tokens used for testing
+/docs/API_TOKENS.local
+*.local
+
+# Ignore macOS specific files
+.DS_Store

@@ -359,6 +359,7 @@ GEM
       base64
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
+    yard (0.9.37)
     zeitwerk (2.7.2)
 
 PLATFORMS
@@ -378,6 +379,7 @@ DEPENDENCIES
   bootsnap
   brakeman
   debug
+  devise
   devise_token_auth
   dotenv-rails (~> 3.1)
   faraday
@@ -397,6 +399,7 @@ DEPENDENCIES
   solid_queue
   thruster
   tzinfo-data
+  yard
 
 BUNDLED WITH
    2.6.5

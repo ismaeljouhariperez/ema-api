@@ -31,5 +31,10 @@ module EmaApi
     
     # Utiliser Sidekiq comme backend pour Active Job
     config.active_job.queue_adapter = :sidekiq
+
+    # Enable sessions for Devise Token Auth
+    config.session_store :cookie_store, key: '_ema_api_session'
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use config.session_store, config.session_options
   end
 end

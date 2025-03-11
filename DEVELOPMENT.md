@@ -11,8 +11,9 @@ Ce document fournit une vue d'ensemble technique et un guide pour les développe
 5. [Authentification et autorisation](#authentification-et-autorisation)
 6. [Intégration avec l'IA](#intégration-avec-lia)
 7. [Traitement asynchrone](#traitement-asynchrone)
-8. [Déploiement](#déploiement)
-9. [Bonnes pratiques](#bonnes-pratiques)
+8. [Tests API](#tests-api)
+9. [Déploiement](#déploiement)
+10. [Bonnes pratiques](#bonnes-pratiques)
 
 ## Architecture du projet
 
@@ -287,6 +288,73 @@ Configuration des files d'attente dans `config/sidekiq.yml` :
 - `default` : Tâches standard
 - `mailers` : Envoi d'emails
 - `low` : Tâches de maintenance
+
+## Tests API
+
+Pour tester manuellement l'API, consultez le document [API_TESTING.md](docs/API_TESTING.md) qui contient des exemples de commandes curl et des informations d'authentification pour les tests.
+
+Ce document inclut :
+
+- Des exemples de commandes curl pour chaque endpoint
+- Des instructions pour obtenir des jetons d'authentification
+- Des instructions pour tester les fonctionnalités asynchrones (Redis/Sidekiq)
+
+### Jetons d'authentification pour les tests
+
+Pour des raisons de sécurité, les jetons d'authentification réels ne sont pas inclus dans le dépôt Git. Pour stocker vos propres jetons d'authentification, créez un fichier `docs/API_TOKENS.local` qui sera ignoré par Git. Vous pouvez y stocker vos jetons et commandes curl avec les vrais jetons.
+
+Pour obtenir des jetons d'authentification :
+
+```bash
+curl -i -X POST -H "Content-Type: application/json" -d '{
+  "email": "test@example.com",
+  "password": "password123"
+}' http://localhost:3000/auth/sign_in
+```
+
+Extrayez les valeurs des en-têtes `access-token`, `client` et `uid` de la réponse.
+
+### Exemples de tests automatisés
+
+Les tests automatisés sont implémentés avec RSpec. Voici un exemple de test pour l'endpoint de création d'aventure :
+
+```ruby
+# spec/requests/api/v1/adventures_spec.rb
+require 'rails_helper'
+
+RSpec.describe "Api::V1::Adventures", type: :request do
+  describe "POST /api/v1/adventures" do
+    let(:user) { create(:user) }
+    let(:auth_headers) { user.create_new_auth_token }
+    let(:valid_attributes) do
+      {
+        adventure: {
+          title: "Randonnée au Lac Bleu",
+          description: "Une belle randonnée avec vue panoramique",
+          location: "Lac Bleu, Pyrénées",
+          tags: "randonnée,nature,montagne",
+          difficulty: "modérée",
+          duration: 180,
+          distance: 12.5
+        }
+      }
+    end
+
+    context "avec un utilisateur authentifié" do
+      it "crée une nouvelle aventure" do
+        expect {
+          post api_v1_adventures_path,
+               params: valid_attributes,
+               headers: auth_headers
+        }.to change(Adventure, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+        expect(json_response["title"]).to eq("Randonnée au Lac Bleu")
+      end
+    end
+  end
+end
+```
 
 ## Déploiement
 

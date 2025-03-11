@@ -175,6 +175,8 @@ Comprehensive documentation is available for developers:
 
 - **Technical Documentation**: See [docs/TECHNICAL.md](docs/TECHNICAL.md) for detailed technical information about the API architecture, data models, and integration points.
 
+- **API Testing Guide**: See [docs/API_TESTING.md](docs/API_TESTING.md) for examples of curl commands to test the API endpoints and authentication information.
+
 - **Code Documentation**: Generated from YARD comments in the code. To generate the documentation, run:
 
   ```sh
