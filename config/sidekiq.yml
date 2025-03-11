@@ -1,0 +1,14 @@
+---
+:concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY", 5) %>
+:timeout: 30
+:verbose: false
+:queues:
+  - [critical, 3]
+  - [default, 2]
+  - [mailers, 2]
+  - [low, 1]
+# Définition des files d'attente :
+# - critical : Tâches urgentes qui doivent être traitées immédiatement
+# - default : Tâches standard comme la génération d'aventures
+# - mailers : Envoi d'emails
+# - low : Tâches de maintenance ou de nettoyage qui peuvent attendre

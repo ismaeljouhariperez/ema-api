@@ -8,74 +8,160 @@ EMA API is the backend of the EMA project, developed in **Rails 8**. It manages 
 
 - **Ruby on Rails 8** (API-only mode)
 - **PostgreSQL** (Primary database)
-- **Devise** (User authentication)
+- **Redis** (For Sidekiq and caching)
+- **Devise Token Auth** (JWT-based authentication)
 - **Pundit** (Authorization management)
 - **Geocoder** (Adventure geolocation)
 - **PgSearch** (Advanced search)
-- **ActiveStorage** (Image management with Cloudinary/S3)
-- **Sidekiq** (Asynchronous jobs)
+- **Sidekiq** (Background job processing)
+- **Faraday** (HTTP client for AI service integration)
+- **Docker** (Containerization)
 
 ## 📌 Features
 
-- ✅ RESTful API for adventures
+- ✅ RESTful API for adventures with proper versioning (v1)
 - ✅ User authentication with JWT (Devise Token Auth)
-- ✅ Adventure storage and retrieval
+- ✅ Fine-grained authorization with Pundit
+- ✅ Adventure storage and retrieval with geolocation
 - ✅ Advanced search with PgSearch
-- ✅ Adventure geolocation
+- ✅ Asynchronous processing with Sidekiq
 - ✅ Integration with the AI service (FastAPI) for content generation
+- ✅ Docker and docker-compose setup for easy development and deployment
 
 ## 🏗️ Installation
 
-### **1. Clone the repository**
+### **Option 1: Local Development**
+
+#### **1. Clone the repository**
 
 ```sh
 git clone https://github.com/your-repo/ema-api.git
 cd ema-api
 ```
 
-### **2. Install dependencies**
+#### **2. Configure environment variables**
+
+```sh
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+#### **3. Install dependencies**
 
 ```sh
 bundle install
 ```
 
-### **3. Configure the database**
+#### **4. Configure the database**
 
 ```sh
-rails db:create db:migrate
+rails db:create db:migrate db:seed
 ```
 
-### **4. Start the server**
+#### **5. Start the server and Sidekiq**
 
 ```sh
+# In one terminal
 rails s
+
+# In another terminal
+bundle exec sidekiq
+```
+
+The API will be accessible at `http://localhost:3000`
+
+### **Option 2: Docker Development**
+
+```sh
+# Copy and configure environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Start all services
+docker-compose up
+
+# Run migrations (first time only)
+docker-compose exec api rails db:migrate db:seed
 ```
 
 The API will be accessible at `http://localhost:3000`
 
 ## 🔧 Main Endpoints
 
-| Method | Endpoint          | Description                |
-| ------ | ----------------- | -------------------------- |
-| GET    | `/adventures`     | List all adventures        |
-| GET    | `/adventures/:id` | Retrieve adventure details |
-| POST   | `/adventures`     | Create a new adventure     |
-| POST   | `/users/sign_in`  | User login                 |
-| POST   | `/users/sign_up`  | User registration          |
+### Authentication
+
+| Method | Endpoint          | Description              |
+| ------ | ----------------- | ------------------------ |
+| POST   | `/auth/sign_in`   | User login               |
+| POST   | `/auth/sign_up`   | User registration        |
+| DELETE | `/auth/sign_out`  | User logout              |
+| GET    | `/api/v1/profile` | Get current user profile |
+
+### Adventures
+
+| Method | Endpoint                    | Description                |
+| ------ | --------------------------- | -------------------------- |
+| GET    | `/api/v1/adventures`        | List all adventures        |
+| GET    | `/api/v1/adventures/:id`    | Retrieve adventure details |
+| POST   | `/api/v1/adventures`        | Create a new adventure     |
+| PUT    | `/api/v1/adventures/:id`    | Update an adventure        |
+| DELETE | `/api/v1/adventures/:id`    | Delete an adventure        |
+| GET    | `/api/v1/adventures/search` | Search adventures          |
+
+### AI Integration
+
+| Method | Endpoint                               | Description                |
+| ------ | -------------------------------------- | -------------------------- |
+| POST   | `/api/v1/ai_adventures/generate`       | Generate adventure with AI |
+| GET    | `/api/v1/ai_adventures/search_similar` | Find similar adventures    |
+| GET    | `/api/v1/ai_adventures/status/:job_id` | Check AI generation status |
 
 ## 🚀 Deployment
 
-### **1. Deploy with Docker**
+### **1. Environment Variables**
 
-```sh
-docker build -t ema-api .
-docker run -p 3000:3000 ema-api
+Make sure to set these environment variables in your production environment:
+
+```
+EMA_API_DATABASE_USERNAME=db_username
+EMA_API_DATABASE_PASSWORD=secure_password
+EMA_API_DATABASE_HOST=your-db-host
+EMA_API_SECRET_KEY=your-secret-key
+REDIS_URL=redis://your-redis-host:6379/0
+EMA_AI_API_URL=https://your-ai-service-url
+ALLOWED_ORIGINS=https://your-frontend-domain.com
 ```
 
-### **2. Deploy to Render/Fly.io**
+### **2. Deploy with Docker**
 
-- Add `DATABASE_URL` and `RAILS_ENV=production`
-- Run migrations with `rails db:migrate`
+```sh
+# Build the image
+docker build -t ema-api .
+
+# Run the container
+docker run -p 80:80 \
+  -e RAILS_ENV=production \
+  -e EMA_API_DATABASE_USERNAME=db_username \
+  -e EMA_API_DATABASE_PASSWORD=secure_password \
+  -e EMA_API_DATABASE_HOST=your-db-host \
+  -e REDIS_URL=redis://your-redis-host:6379/0 \
+  -e EMA_AI_API_URL=https://your-ai-service-url \
+  -e ALLOWED_ORIGINS=https://your-frontend-domain.com \
+  -e SIDEKIQ_ENABLED=true \
+  ema-api
+```
+
+### **3. Deploy with Kamal**
+
+This project is configured for deployment with Kamal:
+
+```sh
+# Set up Kamal
+kamal setup
+
+# Deploy the application
+kamal deploy
+```
 
 ## 📬 Contributing
 

@@ -1,0 +1,76 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${EMA_API_DATABASE_USERNAME:-ema_user}
+      POSTGRES_PASSWORD: ${EMA_API_DATABASE_PASSWORD:-password}
+      POSTGRES_DB: ema_api_development
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U ${EMA_API_DATABASE_USERNAME:-ema_user}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    command: ./bin/rails server -b 0.0.0.0
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - RAILS_ENV=development
+      - EMA_API_DATABASE_USERNAME=${EMA_API_DATABASE_USERNAME:-ema_user}
+      - EMA_API_DATABASE_PASSWORD=${EMA_API_DATABASE_PASSWORD:-password}
+      - EMA_API_DATABASE_HOST=db
+      - REDIS_URL=redis://redis:6379/0
+      - EMA_AI_API_URL=${EMA_AI_API_URL:-http://ai:8000}
+
+  sidekiq:
+    build: .
+    command: bundle exec sidekiq
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - RAILS_ENV=development
+      - EMA_API_DATABASE_USERNAME=${EMA_API_DATABASE_USERNAME:-ema_user}
+      - EMA_API_DATABASE_PASSWORD=${EMA_API_DATABASE_PASSWORD:-password}
+      - EMA_API_DATABASE_HOST=db
+      - REDIS_URL=redis://redis:6379/0
+      - EMA_AI_API_URL=${EMA_AI_API_URL:-http://ai:8000}
+
+volumes:
+  postgres_data:
+  redis_data:
+  bundle_cache:
