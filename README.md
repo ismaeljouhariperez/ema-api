@@ -167,6 +167,29 @@ kamal deploy
 
 Contributions are welcome! Fork the repository and open a PR.
 
+## 📚 Documentation
+
+Comprehensive documentation is available for developers:
+
+- **Developer Guide**: See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for a complete guide to the project architecture, setup, and development workflow.
+
+- **Technical Documentation**: See [docs/TECHNICAL.md](docs/TECHNICAL.md) for detailed technical information about the API architecture, data models, and integration points.
+
+- **Code Documentation**: Generated from YARD comments in the code. To generate the documentation, run:
+
+  ```sh
+  # Install YARD if needed
+  bundle install
+
+  # Generate documentation
+  bin/generate_docs
+
+  # View in browser
+  open doc/yard/index.html
+  ```
+
+- **API Documentation**: The API endpoints are documented in the [API Endpoints](#-main-endpoints) section above.
+
 ## 📝 License
 
 MIT License.

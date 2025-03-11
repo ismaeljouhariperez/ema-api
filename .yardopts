@@ -1,0 +1,14 @@
+--markup markdown
+--markup-provider redcarpet
+--readme README.md
+--title 'EMA API Documentation'
+--output-dir doc/yard
+--protected
+--private
+--embed-mixins
+--asset docs/diagrams:diagrams
+'app/**/*.rb'
+'lib/**/*.rb'
+-
+docs/DEVELOPMENT.md
+docs/TECHNICAL.md 

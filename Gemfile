@@ -69,3 +69,11 @@ gem 'sidekiq-status'
 
 # HTTP client for API calls to ema-ai
 gem 'faraday'
+
+group :development do
+  # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
+  # gem "spring"
+  
+  # Add YARD for documentation generation
+  gem 'yard'
+end

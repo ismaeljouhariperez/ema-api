@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+
+# Créer les répertoires nécessaires
+FileUtils.mkdir_p('doc/yard')
+FileUtils.mkdir_p('docs/diagrams')
+
+# Vérifier si YARD est installé
+puts "Vérification de l'installation de YARD..."
+
+# Essayer d'installer YARD si nécessaire
+unless system('gem list -i yard > /dev/null 2>&1')
+  puts "YARD n'est pas installé. Installation en cours..."
+  system('gem install yard')
+  
+  unless $?.success?
+    puts "Impossible d'installer YARD automatiquement."
+    puts "Veuillez l'installer manuellement avec : gem install yard"
+    exit 1
+  end
+end
+
+# Générer la documentation YARD
+puts "Génération de la documentation YARD..."
+system('yard doc')
+
+# Vérifier si la génération a réussi
+if $?.success?
+  puts "Documentation générée avec succès dans doc/yard/"
+  puts "Ouvrez doc/yard/index.html dans votre navigateur pour la consulter."
+else
+  puts "Erreur lors de la génération de la documentation."
+  exit 1
+end
+
+# Copier les fichiers Markdown dans la documentation YARD
+puts "Copie des fichiers Markdown dans la documentation YARD..."
+FileUtils.cp_r(Dir.glob('docs/*.md'), 'doc/yard/')
+
+puts "Documentation complète générée avec succès!"
+puts "Vous pouvez maintenant consulter la documentation en ouvrant doc/yard/index.html dans votre navigateur." 

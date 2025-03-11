@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  File: TECHNICAL
+  
+    &mdash; EMA API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "TECHNICAL";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="file_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: TECHNICAL</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><div id='filecontents'><h1 id="documentation-technique-ema-api">Documentation Technique - EMA API</h1>
+
+<h2 id="architecture-technique">Architecture technique</h2>
+
+<h3 id="vue-densemble">Vue d&#39;ensemble</h3>
+
+<p>EMA API est une application Rails 8 en mode API qui sert de backend pour la plateforme EMA (Exploration de Micro-Aventures). L&#39;application suit une architecture microservices, où elle interagit avec un service d&#39;IA séparé (ema-ai) développé en Python/FastAPI.</p>
+
+<h3 id="diagramme-darchitecture">Diagramme d&#39;architecture</h3>
+
+<pre class="code ruby"><code class="ruby">┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│                 │      │                 │      │                 │
+│  ema-frontend   │◄────►│    ema-api      │◄────►│     ema-ai      │
+│  (React/TS)     │      │   (Rails 8)     │      │  (Python/FastAPI)│
+│                 │      │                 │      │                 │
+└─────────────────┘      └─────────────────┘      └─────────────────┘
+                                 ▲
+                                 │
+                         ┌───────┴───────┐
+                         │               │
+                         │  PostgreSQL   │
+                         │               │
+                         └───────────────┘
+</code></pre>
+
+<h3 id="composants-principaux">Composants principaux</h3>
+
+<ol>
+<li><strong>API RESTful</strong> : Endpoints versionnés pour les aventures, utilisateurs et fonctionnalités IA</li>
+<li><strong>Authentification JWT</strong> : Gestion des sessions utilisateur avec Devise Token Auth</li>
+<li><strong>Autorisation</strong> : Contrôle d&#39;accès granulaire avec Pundit</li>
+<li><strong>Traitement asynchrone</strong> : Jobs en arrière-plan avec Sidekiq et Redis</li>
+<li><strong>Géolocalisation</strong> : Fonctionnalités de localisation avec Geocoder</li>
+<li><strong>Recherche avancée</strong> : Recherche textuelle avec pg_search</li>
+<li><strong>Intégration IA</strong> : Communication HTTP avec le service ema-ai</li>
+</ol>
+
+<h2 id="mod-les-de-donn-es">Modèles de données</h2>
+
+<h3 id="sch-ma-de-base-de-donn-es">Schéma de base de données</h3>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_┌─────────────────┐'>┌─────────────────┐</span>       <span class='id identifier rubyid_┌─────────────────┐'>┌─────────────────┐</span>
+<span class='id identifier rubyid_│'>│</span>      <span class='const'><span class='object_link'><a href="User.html" title="User (class)">User</a></span></span>       <span class='id identifier rubyid_│'>│</span>       <span class='id identifier rubyid_│'>│</span>    <span class='const'><span class='object_link'><a href="Adventure.html" title="Adventure (class)">Adventure</a></span></span>    <span class='id identifier rubyid_│'>│</span>
+<span class='id identifier rubyid_├─────────────────┤'>├─────────────────┤</span>       <span class='id identifier rubyid_├─────────────────┤'>├─────────────────┤</span>
+<span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_id'>id</span>              <span class='id identifier rubyid_│'>│</span>       <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_id'>id</span>              <span class='id identifier rubyid_│'>│</span>
+<span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_email'>email</span>           <span class='id identifier rubyid_│'>│</span>       <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_title'>title</span>           <span class='id identifier rubyid_│'>│</span>
+<span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_encrypted_pass'>encrypted_pass</span>  <span class='id identifier rubyid_│'>│</span>       <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_description'>description</span>     <span class='id identifier rubyid_│'>│</span>
+<span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_name'>name</span>            <span class='id identifier rubyid_│'>│</span>       <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_location'>location</span>        <span class='id identifier rubyid_│'>│</span>
+<span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_tokens'>tokens</span>          <span class='id identifier rubyid_│'>│</span>       <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_latitude'>latitude</span>        <span class='id identifier rubyid_│'>│</span>
+<span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_created_at'>created_at</span>      <span class='id identifier rubyid_│'>│</span>       <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_longitude'>longitude</span>       <span class='id identifier rubyid_│'>│</span>
+<span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_updated_at'>updated_at</span>      <span class='id identifier rubyid_│'>│</span>       <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_tags'>tags</span>            <span class='id identifier rubyid_│'>│</span>
+<span class='id identifier rubyid_└─────────────────┘'>└─────────────────┘</span>       <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_difficulty'>difficulty</span>      <span class='id identifier rubyid_│'>│</span>
+        <span class='id identifier rubyid_│'>│</span>                 <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_duration'>duration</span>        <span class='id identifier rubyid_│'>│</span>
+        <span class='id identifier rubyid_│'>│</span>                 <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_distance'>distance</span>        <span class='id identifier rubyid_│'>│</span>
+        <span class='id identifier rubyid_│'>│</span>                 <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_user_id'>user_id</span>         <span class='id identifier rubyid_│'>│</span>
+        <span class='id identifier rubyid_└────────────────►│'>└────────────────►│</span> <span class='id identifier rubyid_created_at'>created_at</span>      <span class='id identifier rubyid_│'>│</span>
+                          <span class='id identifier rubyid_│'>│</span> <span class='id identifier rubyid_updated_at'>updated_at</span>      <span class='id identifier rubyid_│'>│</span>
+                          <span class='id identifier rubyid_└─────────────────┘'>└─────────────────┘</span>
+</code></pre>
+
+<h3 id="migrations">Migrations</h3>
+
+<p>Les migrations principales incluent :</p>
+
+<ol>
+<li><code>devise_token_auth_create_users.rb</code> - Crée la table des utilisateurs avec authentification</li>
+<li><code>create_adventures.rb</code> - Crée la table des aventures avec géolocalisation</li>
+</ol>
+
+<h2 id="api-endpoints">API Endpoints</h2>
+
+<h3 id="format-de-r-ponse">Format de réponse</h3>
+
+<p>Toutes les réponses API sont au format JSON et suivent cette structure :</p>
+
+<pre class="code json"><code class="json">// Réponse réussie (collection)
+{
+  &quot;data&quot;: [
+    {
+      &quot;id&quot;: 1,
+      &quot;type&quot;: &quot;adventure&quot;,
+      &quot;attributes&quot;: {
+        &quot;title&quot;: &quot;Randonnée au Lac Bleu&quot;,
+        &quot;description&quot;: &quot;Une belle randonnée...&quot;,
+        // autres attributs
+      }
+    }
+  ]
+}
+
+// Réponse d&#39;erreur
+{
+  &quot;error&quot;: &quot;Message d&#39;erreur&quot;,
+  &quot;status&quot;: 400,
+  &quot;details&quot;: [&quot;Détail de l&#39;erreur 1&quot;, &quot;Détail de l&#39;erreur 2&quot;]
+}
+</code></pre>
+
+<h3 id="en-t-tes-dauthentification">En-têtes d&#39;authentification</h3>
+
+<p>Pour les endpoints authentifiés, les en-têtes suivants sont requis :</p>
+
+<pre class="code ruby"><code class="ruby">access-token: &lt;token&gt;
+client: &lt;client-id&gt;
+uid: &lt;user-email&gt;
+</code></pre>
+
+<p>Ces en-têtes sont fournis lors de la connexion et doivent être inclus dans les requêtes ultérieures.</p>
+
+<h2 id="int-gration-avec-ema-ai">Intégration avec ema-ai</h2>
+
+<h3 id="flux-de-communication">Flux de communication</h3>
+
+<ol>
+<li>L&#39;utilisateur envoie une requête à <code>/api/v1/ai_adventures/generate</code> avec un prompt</li>
+<li>ema-api lance un job Sidekiq en arrière-plan</li>
+<li>Le job appelle l&#39;API ema-ai via Faraday</li>
+<li>ema-ai génère une aventure avec OpenAI/LangChain</li>
+<li>ema-api reçoit la réponse et crée une nouvelle aventure</li>
+<li>L&#39;utilisateur peut vérifier le statut via <code>/api/v1/ai_adventures/status/:job_id</code></li>
+</ol>
+
+<h3 id="format-des-donn-es-chang-es">Format des données échangées</h3>
+
+<p><strong>Requête à ema-ai :</strong></p>
+
+<pre class="code json"><code class="json">{
+  &quot;prompt&quot;: &quot;Je cherche une randonnée près de Bordeaux&quot;
+}
+</code></pre>
+
+<p><strong>Réponse de ema-ai :</strong></p>
+
+<pre class="code json"><code class="json">{
+  &quot;title&quot;: &quot;Randonnée dans les vignobles de Saint-Émilion&quot;,
+  &quot;description&quot;: &quot;Une magnifique randonnée à travers les vignobles...&quot;,
+  &quot;location&quot;: &quot;Saint-Émilion, Bordeaux&quot;,
+  &quot;tags&quot;: [&quot;nature&quot;, &quot;vignoble&quot;, &quot;patrimoine&quot;],
+  &quot;difficulty&quot;: &quot;facile&quot;,
+  &quot;duration&quot;: 120,
+  &quot;distance&quot;: 8.5
+}
+</code></pre>
+
+<h2 id="traitement-asynchrone">Traitement asynchrone</h2>
+
+<h3 id="configuration-de-sidekiq">Configuration de Sidekiq</h3>
+
+<p>Sidekiq est configuré avec plusieurs files d&#39;attente dans <code>config/sidekiq.yml</code> :</p>
+
+<pre class="code yaml"><code class="yaml">:concurrency: &lt;%= ENV.fetch(&quot;SIDEKIQ_CONCURRENCY&quot;, 5) %&gt;
+:queues:
+  - [critical, 3]
+  - [default, 2]
+  - [mailers, 2]
+  - [low, 1]
+</code></pre>
+
+<h3 id="jobs-principaux">Jobs principaux</h3>
+
+<ul>
+<li><code>GenerateAdventureJob</code> : Génère une aventure via l&#39;API ema-ai</li>
+</ul>
+
+<h3 id="gestion-des-erreurs">Gestion des erreurs</h3>
+
+<p>Les jobs implémentent une stratégie de retry avec backoff exponentiel :</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_retry_on'>retry_on</span> <span class='const'>Faraday</span><span class='op'>::</span><span class='const'>Error</span><span class='comma'>,</span> <span class='label'>wait:</span> <span class='symbol'>:exponentially_longer</span><span class='comma'>,</span> <span class='label'>attempts:</span> <span class='int'>3</span>
+<span class='id identifier rubyid_discard_on'>discard_on</span> <span class='const'>StandardError</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_job'>job</span><span class='comma'>,</span> <span class='id identifier rubyid_error'>error</span><span class='op'>|</span>
+  <span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Échec de la génération d&#39;aventure: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_error'>error</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<h2 id="s-curit">Sécurité</h2>
+
+<h3 id="authentification">Authentification</h3>
+
+<p>L&#39;authentification est gérée par Devise Token Auth avec JWT :</p>
+
+<ol>
+<li>L&#39;utilisateur s&#39;authentifie via <code>/auth/sign_in</code></li>
+<li>Le serveur génère un token JWT et le renvoie dans les en-têtes</li>
+<li>Le client stocke ce token et l&#39;inclut dans les requêtes ultérieures</li>
+</ol>
+
+<h3 id="autorisation">Autorisation</h3>
+
+<p>L&#39;autorisation est gérée par Pundit avec des politiques pour chaque ressource :</p>
+
+<pre class="code ruby"><code class="ruby"><span class='comment'># Exemple de politique pour les aventures
+</span><span class='kw'>class</span> <span class='const'><span class='object_link'><a href="AdventurePolicy.html" title="AdventurePolicy (class)">AdventurePolicy</a></span></span> <span class='op'>&lt;</span> <span class='const'><span class='object_link'><a href="ApplicationPolicy.html" title="ApplicationPolicy (class)">ApplicationPolicy</a></span></span>
+  <span class='kw'>def</span> <span class='id identifier rubyid_update?'>update?</span>
+    <span class='id identifier rubyid_user_is_owner?'>user_is_owner?</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_private'>private</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_user_is_owner?'>user_is_owner?</span>
+    <span class='id identifier rubyid_user'>user</span><span class='period'>.</span><span class='id identifier rubyid_present?'>present?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_record'>record</span><span class='period'>.</span><span class='id identifier rubyid_user_id'>user_id</span> <span class='op'>==</span> <span class='id identifier rubyid_user'>user</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<h3 id="cors">CORS</h3>
+
+<p>CORS est configuré pour permettre les requêtes depuis le frontend :</p>
+
+<pre class="code ruby"><code class="ruby"><span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_application'>application</span><span class='period'>.</span><span class='id identifier rubyid_config'>config</span><span class='period'>.</span><span class='id identifier rubyid_middleware'>middleware</span><span class='period'>.</span><span class='id identifier rubyid_insert_before'>insert_before</span> <span class='int'>0</span><span class='comma'>,</span> <span class='const'>Rack</span><span class='op'>::</span><span class='const'>Cors</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_allow'>allow</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_origins'>origins</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ALLOWED_ORIGINS</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>,</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_resource'>resource</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>*</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+      <span class='label'>headers:</span> <span class='symbol'>:any</span><span class='comma'>,</span>
+      <span class='label'>methods:</span> <span class='lbracket'>[</span><span class='symbol'>:get</span><span class='comma'>,</span> <span class='symbol'>:post</span><span class='comma'>,</span> <span class='symbol'>:put</span><span class='comma'>,</span> <span class='symbol'>:patch</span><span class='comma'>,</span> <span class='symbol'>:delete</span><span class='comma'>,</span> <span class='symbol'>:options</span><span class='comma'>,</span> <span class='symbol'>:head</span><span class='rbracket'>]</span><span class='comma'>,</span>
+      <span class='label'>expose:</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>access-token</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>expiry</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>token-type</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>uid</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>client</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<h2 id="d-ploiement">Déploiement</h2>
+
+<h3 id="configuration-docker">Configuration Docker</h3>
+
+<p>Le projet inclut un <code>Dockerfile</code> et un <code>docker-compose.yml</code> pour faciliter le déploiement :</p>
+
+<pre class="code dockerfile"><code class="dockerfile"># Dockerfile (extrait)
+FROM ruby:3.3.6-slim AS base
+WORKDIR /rails
+# ...
+ENTRYPOINT [&quot;/rails/bin/docker-entrypoint&quot;]
+EXPOSE 80
+CMD [&quot;./bin/thrust&quot;, &quot;./bin/rails&quot;, &quot;server&quot;]
+</code></pre>
+
+<h3 id="variables-denvironnement">Variables d&#39;environnement</h3>
+
+<p>Les variables d&#39;environnement requises sont documentées dans <code>.env.example</code> et doivent être configurées dans l&#39;environnement de production.</p>
+
+<h3 id="surveillance-et-logging">Surveillance et logging</h3>
+
+<ul>
+<li>Les logs Rails sont disponibles dans <code>log/production.log</code></li>
+<li>Sidekiq fournit une interface web à <code>/sidekiq</code> pour surveiller les jobs</li>
+<li>Les erreurs d&#39;application sont enregistrées dans les logs Rails</li>
+</ul>
+
+<h2 id="performance">Performance</h2>
+
+<h3 id="optimisations">Optimisations</h3>
+
+<ol>
+<li><strong>Mise en cache</strong> : Utilisation de Redis pour la mise en cache</li>
+<li><strong>Traitement asynchrone</strong> : Utilisation de Sidekiq pour les tâches longues</li>
+<li><strong>Indexation</strong> : Indexes sur les colonnes fréquemment recherchées</li>
+<li><strong>Sérialiseurs</strong> : Contrôle précis des données renvoyées par l&#39;API</li>
+</ol>
+
+<h3 id="points-dattention">Points d&#39;attention</h3>
+
+<ol>
+<li><strong>Appels à l&#39;API ema-ai</strong> : Peuvent être lents, d&#39;où l&#39;utilisation de Sidekiq</li>
+<li><strong>Recherche géospatiale</strong> : Peut être intensive en ressources sur de grands ensembles de données</li>
+<li><strong>Authentification JWT</strong> : Vérification des tokens à chaque requête</li>
+</ol>
+</div></div>
+
+      <div id="footer">
+  Generated on Tue Mar 11 17:58:11 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.3.6).
+</div>
+
+    </div>
+  </body>
+</html>
