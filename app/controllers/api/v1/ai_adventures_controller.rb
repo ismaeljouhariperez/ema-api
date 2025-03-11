@@ -2,7 +2,7 @@ class Api::V1::AiAdventuresController < Api::V1::BaseController
   skip_before_action :authenticate_user!, only: [:search_similar]
   
   # POST /api/v1/ai_adventures/generate
-  # Génère une aventure basée sur un prompt utilisateur et l'enregistre
+  # Génère une aventure basée sur un prompt utilisateur et l'enregistre en arrière-plan
   def generate
     prompt = params[:prompt]
     
@@ -11,31 +11,15 @@ class Api::V1::AiAdventuresController < Api::V1::BaseController
       return
     end
     
-    # Appel au service ema-ai
-    ai_service = EmaAiService.new
-    result = ai_service.generate_adventure(prompt)
+    # Lancer le job en arrière-plan
+    job = GenerateAdventureJob.perform_later(current_user.id, prompt, params[:callback_url])
     
-    if result[:error].present?
-      render json: { error: result[:error], message: result[:message] }, status: :service_unavailable
-      return
-    end
-    
-    # Création d'une nouvelle aventure avec les données générées par l'IA
-    @adventure = current_user.adventures.build(
-      title: result["title"],
-      description: result["description"],
-      location: result["location"],
-      tags: result["tags"].join(","),
-      difficulty: result["difficulty"],
-      duration: result["duration"],
-      distance: result["distance"]
-    )
-    
-    if @adventure.save
-      render json: @adventure, status: :created
-    else
-      render json: { errors: @adventure.errors.full_messages }, status: :unprocessable_entity
-    end
+    # Répondre immédiatement avec l'ID du job
+    render json: { 
+      message: "Génération d'aventure en cours", 
+      job_id: job.job_id,
+      status: "processing"
+    }, status: :accepted
   end
   
   # GET /api/v1/ai_adventures/search_similar
@@ -58,5 +42,30 @@ class Api::V1::AiAdventuresController < Api::V1::BaseController
     end
     
     render json: result
+  end
+  
+  # GET /api/v1/ai_adventures/status/:job_id
+  # Vérifie le statut d'un job de génération d'aventure
+  def status
+    job_id = params[:job_id]
+    
+    if job_id.blank?
+      render json: { error: "L'ID du job ne peut pas être vide" }, status: :unprocessable_entity
+      return
+    end
+    
+    # Vérifier le statut du job dans Sidekiq
+    job_status = Sidekiq::Status.get_all(job_id)
+    
+    if job_status.empty?
+      render json: { error: "Job non trouvé" }, status: :not_found
+      return
+    end
+    
+    render json: { 
+      job_id: job_id,
+      status: job_status['status'],
+      progress: job_status['progress']
+    }
   end
 end

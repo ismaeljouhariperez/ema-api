@@ -28,5 +28,8 @@ module EmaApi
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+    
+    # Utiliser Sidekiq comme backend pour Active Job
+    config.active_job.queue_adapter = :sidekiq
   end
 end

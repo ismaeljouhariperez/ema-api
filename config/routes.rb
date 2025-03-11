@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   mount_devise_token_auth_for 'User', at: 'auth'
   
+  # Sidekiq Web UI
+  mount Sidekiq::Web => '/sidekiq'
+  
   # API routes
   namespace :api do
     namespace :v1 do
@@ -22,6 +25,7 @@ Rails.application.routes.draw do
       namespace :ai_adventures do
         post :generate
         get :search_similar
+        get 'status/:job_id', to: 'ai_adventures#status', as: :status
       end
     end
   end

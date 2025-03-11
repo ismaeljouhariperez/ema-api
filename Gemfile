@@ -65,6 +65,7 @@ gem 'active_model_serializers'
 
 # Background job processing
 gem 'sidekiq'
+gem 'sidekiq-status'
 
 # HTTP client for API calls to ema-ai
 gem 'faraday'
