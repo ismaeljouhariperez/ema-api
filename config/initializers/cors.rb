@@ -7,7 +7,13 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins '*'  # En production, remplacer par les domaines spécifiques autorisés
+    # En développement, autoriser toutes les origines si aucune n'est spécifiée
+    # En production, utiliser uniquement les origines spécifiées
+    if ENV['ALLOWED_ORIGINS'].present?
+      origins ENV['ALLOWED_ORIGINS'].split(',')
+    else
+      origins '*'  # Uniquement pour le développement
+    end
 
     resource '*',
       headers: :any,

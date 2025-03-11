@@ -19,7 +19,6 @@ default: &default
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
-
 development:
   <<: *default
   database: ema_api_development
@@ -82,8 +81,10 @@ production:
   primary: &primary_production
     <<: *default
     database: ema_api_production
-    username: ema_api
-    password: <%= ENV["EMA_API_DATABASE_PASSWORD"] %>
+    username: <%= ENV['EMA_API_DATABASE_USERNAME'] %>
+    password: <%= ENV['EMA_API_DATABASE_PASSWORD'] %>
+    host: <%= ENV['EMA_API_DATABASE_HOST'] || 'localhost' %>
+    port: <%= ENV['EMA_API_DATABASE_PORT'] || 5432 %>
   cache:
     <<: *primary_production
     database: ema_api_production_cache

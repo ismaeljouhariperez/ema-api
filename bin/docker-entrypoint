@@ -1,14 +1,31 @@
-#!/bin/bash -e
+#!/bin/bash
+set -e
 
-# Enable jemalloc for reduced memory usage and latency.
-if [ -z "${LD_PRELOAD+x}" ]; then
-    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
-    export LD_PRELOAD
+# Remove a potentially pre-existing server.pid for Rails
+rm -f /rails/tmp/pids/server.pid
+
+# Wait for PostgreSQL to be available
+until pg_isready -h ${EMA_API_DATABASE_HOST:-localhost} -p ${EMA_API_DATABASE_PORT:-5432} -U ${EMA_API_DATABASE_USERNAME:-postgres}
+do
+  echo "Waiting for PostgreSQL to be available..."
+  sleep 2
+done
+
+# Wait for Redis to be available
+until redis-cli -h ${REDIS_HOST:-redis} -p ${REDIS_PORT:-6379} ping | grep -q PONG
+do
+  echo "Waiting for Redis to be available..."
+  sleep 2
+done
+
+# Prepare the database if it doesn't exist
+bundle exec rails db:prepare
+
+# Start Sidekiq in the background if SIDEKIQ_ENABLED is set to true
+if [ "${SIDEKIQ_ENABLED}" = "true" ]; then
+  echo "Starting Sidekiq..."
+  bundle exec sidekiq -C config/sidekiq.yml &
 fi
 
-# If running the rails server then create or migrate existing database
-if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  ./bin/rails db:prepare
-fi
-
-exec "${@}"
+# Execute the main command (usually the Rails server)
+exec "$@"
