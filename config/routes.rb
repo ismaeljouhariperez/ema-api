@@ -10,8 +10,13 @@ Rails.application.routes.draw do
         end
       end
       
-      # Route pour obtenir les informations de l'utilisateur actuel
+      # Routes utilisateurs
       get 'profile', to: 'users#profile'
+      resources :users, only: [] do
+        member do
+          get :adventures
+        end
+      end
     end
   end
   
