@@ -1,0 +1,50 @@
+{
+  "rules": [
+    {
+      "scope": "backend",
+      "includes": ["app/**/*", "config/**/*", "db/**/*", "lib/**/*"],
+      "excludes": [
+        "spec/**/*",
+        "test/**/*",
+        "log/**/*",
+        "tmp/**/*",
+        "node_modules/**/*"
+      ]
+    },
+    {
+      "scope": "database",
+      "includes": ["db/migrate/**/*", "db/schema.rb", "db/seeds.rb"],
+      "excludes": ["db/backups/**/*"]
+    },
+    {
+      "scope": "api_controllers",
+      "includes": ["app/controllers/**/*"],
+      "excludes": ["app/views/**/*"]
+    },
+    {
+      "scope": "models",
+      "includes": ["app/models/**/*"],
+      "excludes": ["app/controllers/**/*", "app/views/**/*"]
+    },
+    {
+      "scope": "serializers",
+      "includes": ["app/serializers/**/*"],
+      "excludes": []
+    },
+    {
+      "scope": "config",
+      "includes": ["config/**/*"],
+      "excludes": ["config/environments/**/*", "config/initializers/**/*"]
+    },
+    {
+      "scope": "tasks",
+      "includes": ["lib/tasks/**/*"],
+      "excludes": []
+    },
+    {
+      "scope": "logs",
+      "includes": ["log/**/*"],
+      "excludes": []
+    }
+  ]
+}
