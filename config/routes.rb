@@ -17,6 +17,12 @@ Rails.application.routes.draw do
           get :adventures
         end
       end
+      
+      # Routes IA
+      namespace :ai_adventures do
+        post :generate
+        get :search_similar
+      end
     end
   end
   
