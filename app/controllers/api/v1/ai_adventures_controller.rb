@@ -4,6 +4,8 @@ class Api::V1::AiAdventuresController < Api::V1::BaseController
   # POST /api/v1/ai_adventures/generate
   # Génère une aventure basée sur un prompt utilisateur et l'enregistre en arrière-plan
   def generate
+    authorize :ai_adventure, :generate?
+    
     prompt = params[:prompt]
     
     if prompt.blank?
@@ -25,6 +27,8 @@ class Api::V1::AiAdventuresController < Api::V1::BaseController
   # GET /api/v1/ai_adventures/search_similar
   # Recherche des aventures similaires basées sur un texte
   def search_similar
+    authorize :ai_adventure, :search_similar?
+    
     query = params[:query]
     
     if query.blank?
@@ -47,6 +51,8 @@ class Api::V1::AiAdventuresController < Api::V1::BaseController
   # GET /api/v1/ai_adventures/status/:job_id
   # Vérifie le statut d'un job de génération d'aventure
   def status
+    authorize :ai_adventure, :status?
+    
     job_id = params[:job_id]
     
     if job_id.blank?

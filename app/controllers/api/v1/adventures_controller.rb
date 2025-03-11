@@ -4,18 +4,20 @@ class Api::V1::AdventuresController < Api::V1::BaseController
   
   # GET /api/v1/adventures
   def index
-    @adventures = Adventure.all
+    @adventures = policy_scope(Adventure)
     render json: @adventures
   end
   
   # GET /api/v1/adventures/1
   def show
+    authorize @adventure
     render json: @adventure
   end
   
   # POST /api/v1/adventures
   def create
     @adventure = current_user.adventures.build(adventure_params)
+    authorize @adventure
     
     if @adventure.save
       render json: @adventure, status: :created
@@ -26,10 +28,7 @@ class Api::V1::AdventuresController < Api::V1::BaseController
   
   # PATCH/PUT /api/v1/adventures/1
   def update
-    if @adventure.user_id != current_user.id
-      render json: { error: 'Unauthorized' }, status: :unauthorized
-      return
-    end
+    authorize @adventure
     
     if @adventure.update(adventure_params)
       render json: @adventure
@@ -40,11 +39,7 @@ class Api::V1::AdventuresController < Api::V1::BaseController
   
   # DELETE /api/v1/adventures/1
   def destroy
-    if @adventure.user_id != current_user.id
-      render json: { error: 'Unauthorized' }, status: :unauthorized
-      return
-    end
-    
+    authorize @adventure
     @adventure.destroy
     head :no_content
   end
@@ -56,6 +51,9 @@ class Api::V1::AdventuresController < Api::V1::BaseController
     else
       @adventures = Adventure.all
     end
+    
+    # Filtrer les résultats selon les politiques d'autorisation
+    @adventures = policy_scope(@adventures)
     
     render json: @adventures
   end
