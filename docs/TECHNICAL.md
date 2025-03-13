@@ -20,6 +20,7 @@ EMA API est une application Rails 8 en mode API qui sert de backend pour la plat
                          ┌───────┴───────┐
                          │               │
                          │  PostgreSQL   │
+                         │  (DB/Jobs/Cache)│
                          │               │
                          └───────────────┘
 ```
@@ -29,10 +30,11 @@ EMA API est une application Rails 8 en mode API qui sert de backend pour la plat
 1. **API RESTful** : Endpoints versionnés pour les aventures, utilisateurs et fonctionnalités IA
 2. **Authentification JWT** : Gestion des sessions utilisateur avec Devise Token Auth
 3. **Autorisation** : Contrôle d'accès granulaire avec Pundit
-4. **Traitement asynchrone** : Jobs en arrière-plan avec Sidekiq et Redis
-5. **Géolocalisation** : Fonctionnalités de localisation avec Geocoder
-6. **Recherche avancée** : Recherche textuelle avec pg_search
-7. **Intégration IA** : Communication HTTP avec le service ema-ai
+4. **Traitement asynchrone** : Jobs en arrière-plan avec Solid Queue
+5. **Mise en cache** : Caching basé sur PostgreSQL avec Solid Cache
+6. **Géolocalisation** : Fonctionnalités de localisation avec Geocoder
+7. **Recherche avancée** : Recherche textuelle avec pg_search
+8. **Intégration IA** : Communication HTTP avec le service ema-ai
 
 ## Modèles de données
 
@@ -144,18 +146,21 @@ Ces en-têtes sont fournis lors de la connexion et doivent être inclus dans les
 
 ## Traitement asynchrone
 
-### Configuration de Sidekiq
+### Configuration de Solid Queue
 
-Sidekiq est configuré avec plusieurs files d'attente dans `config/sidekiq.yml` :
+Solid Queue est configuré avec plusieurs files d'attente dans `config/solid_queue.yml` :
 
 ```yaml
-:concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY", 5) %>
-:queues:
-  - [critical, 3]
-  - [default, 2]
-  - [mailers, 2]
-  - [low, 1]
+default: &default
+  concurrency: <%= ENV.fetch("SOLID_QUEUE_CONCURRENCY", 5) %>
+  polling_interval: 1
+  queues:
+    - [ai_generation, 3]
+    - [mailers, 2]
+    - [default, 1]
 ```
+
+L'interface web de Solid Queue est accessible à `/solid_queue` et protégée par une authentification HTTP Basic.
 
 ### Jobs principaux
 
@@ -247,13 +252,20 @@ Les variables d'environnement requises sont documentées dans `.env.example` et 
 
 ### Optimisations
 
-1. **Mise en cache** : Utilisation de Redis pour la mise en cache
-2. **Traitement asynchrone** : Utilisation de Sidekiq pour les tâches longues
+1. **Mise en cache** : Utilisation de Solid Cache pour la mise en cache
+2. **Traitement asynchrone** : Utilisation de Solid Queue pour les tâches longues
 3. **Indexation** : Indexes sur les colonnes fréquemment recherchées
 4. **Sérialiseurs** : Contrôle précis des données renvoyées par l'API
 
 ### Points d'attention
 
-1. **Appels à l'API ema-ai** : Peuvent être lents, d'où l'utilisation de Sidekiq
+1. **Appels à l'API ema-ai** : Peuvent être lents, d'où l'utilisation de Solid Queue
 2. **Recherche géospatiale** : Peut être intensive en ressources sur de grands ensembles de données
 3. **Authentification JWT** : Vérification des tokens à chaque requête
+
+## Bonnes pratiques
+
+1. **Mise en cache** : Utilisation de Solid Cache pour la mise en cache des données fréquemment accédées
+2. **Traitement asynchrone** : Utilisation de Solid Queue pour les tâches longues
+3. **Gestion des erreurs** : Capture et journalisation des erreurs, avec retry pour les opérations critiques
+4. **Sécurité** : Validation des entrées, protection CSRF, et authentification JWT

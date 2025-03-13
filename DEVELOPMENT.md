@@ -266,28 +266,79 @@ end
 
 ## Traitement asynchrone
 
-Les tâches intensives comme la génération d'aventures sont traitées de manière asynchrone avec Sidekiq :
+Les tâches intensives comme la génération d'aventures sont traitées de manière asynchrone avec Solid Queue :
 
 ```ruby
-# Lancement d'un job en arrière-plan
-GenerateAdventureJob.perform_later(user_id, prompt)
-
-# Définition du job
+# Exemple de job pour générer une aventure
 class GenerateAdventureJob < ApplicationJob
-  queue_as :default
+  queue_as :ai_generation
 
-  def perform(user_id, prompt)
-    # Logique de génération d'aventure
+  retry_on Faraday::Error, wait: :exponentially_longer, attempts: 3
+
+  def perform(user_id, prompt, callback_url = nil)
+    # Appel au service ema-ai et création de l'aventure
   end
+end
+
+# Lancement du job depuis un contrôleur
+job = GenerateAdventureJob.perform_later(current_user.id, prompt, callback_url)
+```
+
+### Configuration de Solid Queue
+
+Solid Queue est configuré avec plusieurs files d'attente dans `config/solid_queue.yml` :
+
+```yaml
+default: &default
+  concurrency: <%= ENV.fetch("SOLID_QUEUE_CONCURRENCY", 5) %>
+  polling_interval: 1
+  queues:
+    - [ai_generation, 3]
+    - [mailers, 2]
+    - [default, 1]
+```
+
+### Vérification du statut des jobs
+
+```ruby
+# Dans le contrôleur
+def status
+  job_id = params[:job_id]
+  job = SolidQueue::Job.find_by(id: job_id)
+
+  status = case job.scheduled_at
+  when nil
+    if job.finished_at.present?
+      "completed"
+    else
+      "processing"
+    end
+  else
+    "scheduled"
+  end
+
+  render json: {
+    job_id: job_id,
+    status: status,
+    scheduled_at: job.scheduled_at,
+    finished_at: job.finished_at
+  }
 end
 ```
 
-Configuration des files d'attente dans `config/sidekiq.yml` :
+## Mise en cache
 
-- `critical` : Tâches urgentes
-- `default` : Tâches standard
-- `mailers` : Envoi d'emails
-- `low` : Tâches de maintenance
+L'application utilise Solid Cache pour la mise en cache, qui est basé sur la base de données PostgreSQL :
+
+```ruby
+# Configuration dans config/environments/production.rb
+config.cache_store = :solid_cache_store, { expires_in: 1.day }
+
+# Exemple d'utilisation
+Rails.cache.fetch("adventure_#{id}", expires_in: 1.hour) do
+  Adventure.find(id)
+end
+```
 
 ## Tests API
 

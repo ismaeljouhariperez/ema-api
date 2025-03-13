@@ -7,13 +7,13 @@ EMA API is the backend of the EMA project, developed in **Rails 8**. It manages 
 ## 🛠️ Tech Stack
 
 - **Ruby on Rails 8** (API-only mode)
-- **PostgreSQL** (Primary database)
-- **Redis** (For Sidekiq and caching)
+- **PostgreSQL** (Primary database, job processing, and caching)
+- **Solid Queue** (Background job processing)
+- **Solid Cache** (Database-backed caching)
 - **Devise Token Auth** (JWT-based authentication)
 - **Pundit** (Authorization management)
 - **Geocoder** (Adventure geolocation)
 - **PgSearch** (Advanced search)
-- **Sidekiq** (Background job processing)
 - **Faraday** (HTTP client for AI service integration)
 - **Docker** (Containerization)
 
@@ -24,7 +24,8 @@ EMA API is the backend of the EMA project, developed in **Rails 8**. It manages 
 - ✅ Fine-grained authorization with Pundit
 - ✅ Adventure storage and retrieval with geolocation
 - ✅ Advanced search with PgSearch
-- ✅ Asynchronous processing with Sidekiq
+- ✅ Asynchronous processing with Solid Queue
+- ✅ Database-backed caching with Solid Cache
 - ✅ Integration with the AI service (FastAPI) for content generation
 - ✅ Docker and docker-compose setup for easy development and deployment
 
@@ -58,14 +59,14 @@ bundle install
 rails db:create db:migrate db:seed
 ```
 
-#### **5. Start the server and Sidekiq**
+#### **5. Start the server and Solid Queue**
 
 ```sh
 # In one terminal
 rails s
 
 # In another terminal
-bundle exec sidekiq
+bundle exec solid_queue --config-file=config/solid_queue.yml
 ```
 
 The API will be accessible at `http://localhost:3000`
@@ -127,8 +128,9 @@ EMA_API_DATABASE_USERNAME=db_username
 EMA_API_DATABASE_PASSWORD=secure_password
 EMA_API_DATABASE_HOST=your-db-host
 EMA_API_SECRET_KEY=your-secret-key
-REDIS_URL=redis://your-redis-host:6379/0
 EMA_AI_API_URL=https://your-ai-service-url
+SOLID_QUEUE_ENABLED=true
+SOLID_QUEUE_CONCURRENCY=10
 ALLOWED_ORIGINS=https://your-frontend-domain.com
 ```
 
@@ -144,10 +146,9 @@ docker run -p 80:80 \
   -e EMA_API_DATABASE_USERNAME=db_username \
   -e EMA_API_DATABASE_PASSWORD=secure_password \
   -e EMA_API_DATABASE_HOST=your-db-host \
-  -e REDIS_URL=redis://your-redis-host:6379/0 \
   -e EMA_AI_API_URL=https://your-ai-service-url \
   -e ALLOWED_ORIGINS=https://your-frontend-domain.com \
-  -e SIDEKIQ_ENABLED=true \
+  -e SOLID_QUEUE_ENABLED=true \
   ema-api
 ```
 

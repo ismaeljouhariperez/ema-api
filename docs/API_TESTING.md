@@ -121,36 +121,33 @@ curl -X POST -H "Content-Type: application/json" \
   -H "uid: <VOTRE_EMAIL>" \
   -d '{
     "prompt": "Je cherche une randonnée près de Bordeaux"
-  }' http://localhost:3000/api/v1/ai_adventures/generate
+  }' \
+  http://localhost:3000/api/v1/ai_adventures/generate
 ```
 
-**Note** : Cette fonctionnalité nécessite Redis et Sidekiq pour fonctionner correctement.
+**Note** : Cette fonctionnalité nécessite Solid Queue pour fonctionner correctement.
 
-#### Vérifier le statut d'une génération (authentifié)
+La réponse inclura un `job_id` que vous pouvez utiliser pour vérifier le statut de la génération :
 
 ```bash
 curl -X GET -H "Content-Type: application/json" \
   -H "access-token: <VOTRE_ACCESS_TOKEN>" \
   -H "client: <VOTRE_CLIENT_ID>" \
   -H "uid: <VOTRE_EMAIL>" \
-  http://localhost:3000/api/v1/ai_adventures/status/JOB_ID
+  http://localhost:3000/api/v1/ai_adventures/status/<JOB_ID>
 ```
 
-Remplacez `JOB_ID` par l'identifiant du job retourné lors de la génération.
+### Solid Queue
+
+Pour tester les fonctionnalités asynchrones (génération d'aventures avec l'IA), vous devez avoir Solid Queue en cours d'exécution :
+
+```bash
+# Démarrer Solid Queue
+bundle exec solid_queue --config-file=config/solid_queue.yml
+```
 
 ## Prérequis pour les fonctionnalités avancées
 
-### Redis et Sidekiq
+### Service ema-ai
 
-Pour tester les fonctionnalités asynchrones (génération d'aventures avec l'IA), vous devez avoir Redis installé et démarré :
-
-```bash
-# Installation avec Homebrew (macOS)
-brew install redis
-
-# Démarrer Redis
-brew services start redis
-
-# Démarrer Sidekiq
-bundle exec sidekiq
-```
+Pour tester les fonctionnalités d'IA, vous devez avoir le service ema-ai en cours d'exécution. Consultez le repository ema-ai pour les instructions d'installation.
