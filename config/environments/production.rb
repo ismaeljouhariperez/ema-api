@@ -47,7 +47,11 @@ Rails.application.configure do
   # config.cache_store = :mem_cache_store
 
   # Replace the default in-process and non-durable queuing backend for Active Job.
-  # config.active_job.queue_adapter = :resque
+  config.active_job.queue_adapter = :solid_queue
+  # config.active_job.queue_name_prefix = "ema_api_production"
+
+  # Enable caching with Solid Cache
+  config.cache_store = :solid_cache_store, { expires_in: 1.day }
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

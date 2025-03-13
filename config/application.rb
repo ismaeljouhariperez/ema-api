@@ -29,8 +29,8 @@ module EmaApi
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
     
-    # Utiliser Sidekiq comme backend pour Active Job
-    config.active_job.queue_adapter = :sidekiq
+    # Utiliser Solid Queue comme backend pour Active Job
+    config.active_job.queue_adapter = :solid_queue
 
     # Enable sessions for Devise Token Auth
     config.session_store :cookie_store, key: '_ema_api_session'

@@ -1,0 +1,19 @@
+default: &default
+  concurrency: <%= ENV.fetch("SOLID_QUEUE_CONCURRENCY", 5) %>
+  polling_interval: 1
+  queues:
+    - [default, 1]
+    - [mailers, 2]
+    - [ai_generation, 3]
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+  concurrency: 1
+
+production:
+  <<: *default
+  concurrency: <%= ENV.fetch("SOLID_QUEUE_CONCURRENCY", 10) %>
+  polling_interval: 5

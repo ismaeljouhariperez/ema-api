@@ -1,0 +1,25 @@
+{
+  "recommendations": [
+    "rebornix.ruby",
+    "castwide.solargraph",
+    "kaiwood.endwise",
+    "aliariff.vscode-erb-beautify",
+    "misogi.ruby-rubocop",
+    "wingrunr21.vscode-ruby",
+    "connorshea.vscode-ruby-test-adapter",
+    "hridoy.rails-snippets",
+    "aki77.rails-db-schema",
+    "bung87.rails",
+    "vortizhe.simple-ruby-erb",
+    "karunamurti.haml",
+    "redhat.vscode-yaml",
+    "ms-azuretools.vscode-docker",
+    "eamodio.gitlens",
+    "streetsidesoftware.code-spell-checker",
+    "gruntfuggly.todo-tree",
+    "yzhang.markdown-all-in-one",
+    "bierner.markdown-preview-github-styles",
+    "davidanson.vscode-markdownlint",
+    "timonwong.shellcheck"
+  ]
+}

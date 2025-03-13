@@ -1,5 +1,5 @@
 class GenerateAdventureJob < ApplicationJob
-  queue_as :default
+  queue_as :ai_generation
   
   # Nombre de tentatives en cas d'échec
   retry_on Faraday::Error, wait: :exponentially_longer, attempts: 3

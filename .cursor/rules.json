@@ -1,0 +1,70 @@
+{
+  "ruby": {
+    "formatter": "rubocop",
+    "linter": "rubocop",
+    "formatOnSave": true,
+    "lintOnSave": true,
+    "rubyPath": "ruby",
+    "testFramework": "rspec",
+    "testCommand": "bundle exec rspec",
+    "testDiscoveryPatterns": ["spec/**/*_spec.rb"],
+    "codeLens": {
+      "runTest": true,
+      "debugTest": true
+    }
+  },
+  "rails": {
+    "controllerPatterns": ["app/controllers/**/*.rb"],
+    "modelPatterns": ["app/models/**/*.rb"],
+    "viewPatterns": ["app/views/**/*.erb", "app/views/**/*.haml"],
+    "servicePatterns": ["app/services/**/*.rb"],
+    "jobPatterns": ["app/jobs/**/*.rb"],
+    "policyPatterns": ["app/policies/**/*.rb"],
+    "serializerPatterns": ["app/serializers/**/*.rb"]
+  },
+  "devise": {
+    "patterns": [
+      "app/models/user.rb",
+      "config/initializers/devise.rb",
+      "config/initializers/devise_token_auth.rb"
+    ]
+  },
+  "sidekiq": {
+    "patterns": ["app/jobs/**/*.rb", "config/initializers/sidekiq.rb"]
+  },
+  "editor": {
+    "formatOnSave": true,
+    "tabSize": 2,
+    "insertSpaces": true,
+    "rulers": [100],
+    "wordWrap": "off",
+    "trimTrailingWhitespace": true,
+    "insertFinalNewline": true
+  },
+  "files": {
+    "exclude": {
+      "**/tmp": true,
+      "**/log": true,
+      "**/node_modules": true,
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/coverage": true
+    },
+    "watcherExclude": {
+      "**/tmp/**": true,
+      "**/log/**": true,
+      "**/node_modules/**": true,
+      "**/.git/**": true,
+      "**/coverage/**": true
+    }
+  },
+  "search": {
+    "exclude": {
+      "**/tmp": true,
+      "**/log": true,
+      "**/node_modules": true,
+      "**/.git": true,
+      "**/coverage": true
+    }
+  }
+}

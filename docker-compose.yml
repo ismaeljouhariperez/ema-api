@@ -18,18 +18,6 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:7
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   api:
     build: .
     command: ./bin/rails server -b 0.0.0.0
@@ -41,36 +29,28 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/ema_api_development
       - RAILS_ENV=development
-      - EMA_API_DATABASE_USERNAME=${EMA_API_DATABASE_USERNAME:-ema_user}
-      - EMA_API_DATABASE_PASSWORD=${EMA_API_DATABASE_PASSWORD:-password}
-      - EMA_API_DATABASE_HOST=db
-      - REDIS_URL=redis://redis:6379/0
-      - EMA_AI_API_URL=${EMA_AI_API_URL:-http://ai:8000}
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+      - SOLID_QUEUE_ENABLED=true
 
-  sidekiq:
+  solid_queue:
     build: .
-    command: bundle exec sidekiq
+    command: bundle exec solid_queue --config-file=config/solid_queue.yml
     volumes:
-      - .:/rails
-      - bundle_cache:/usr/local/bundle
+      - .:/app
+      - gem_cache:/usr/local/bundle
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/ema_api_development
+      - RAILS_ENV=development
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      - RAILS_ENV=development
-      - EMA_API_DATABASE_USERNAME=${EMA_API_DATABASE_USERNAME:-ema_user}
-      - EMA_API_DATABASE_PASSWORD=${EMA_API_DATABASE_PASSWORD:-password}
-      - EMA_API_DATABASE_HOST=db
-      - REDIS_URL=redis://redis:6379/0
-      - EMA_AI_API_URL=${EMA_AI_API_URL:-http://ai:8000}
 
 volumes:
   postgres_data:
-  redis_data:
+  # redis_data:
   bundle_cache:
+  gem_cache:

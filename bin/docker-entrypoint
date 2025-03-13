@@ -12,19 +12,19 @@ do
 done
 
 # Wait for Redis to be available
-until redis-cli -h ${REDIS_HOST:-redis} -p ${REDIS_PORT:-6379} ping | grep -q PONG
-do
-  echo "Waiting for Redis to be available..."
-  sleep 2
-done
+# until redis-cli -h ${REDIS_HOST:-redis} -p ${REDIS_PORT:-6379} ping | grep -q PONG
+# do
+#   echo "Waiting for Redis to be available..."
+#   sleep 1
+# done
 
 # Prepare the database if it doesn't exist
 bundle exec rails db:prepare
 
-# Start Sidekiq in the background if SIDEKIQ_ENABLED is set to true
-if [ "${SIDEKIQ_ENABLED}" = "true" ]; then
-  echo "Starting Sidekiq..."
-  bundle exec sidekiq -C config/sidekiq.yml &
+# Start Solid Queue in the background if SOLID_QUEUE_ENABLED is set to true
+if [ "${SOLID_QUEUE_ENABLED}" = "true" ]; then
+  echo "Starting Solid Queue..."
+  bundle exec solid_queue --config-file=config/solid_queue.yml &
 fi
 
 # Execute the main command (usually the Rails server)

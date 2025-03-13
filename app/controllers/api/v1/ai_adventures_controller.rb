@@ -60,18 +60,30 @@ class Api::V1::AiAdventuresController < Api::V1::BaseController
       return
     end
     
-    # Vérifier le statut du job dans Sidekiq
-    job_status = Sidekiq::Status.get_all(job_id)
+    # Vérifier le statut du job dans Solid Queue
+    job = SolidQueue::Job.find_by(id: job_id)
     
-    if job_status.empty?
+    if job.nil?
       render json: { error: "Job non trouvé" }, status: :not_found
       return
     end
     
+    status = case job.scheduled_at
+    when nil
+      if job.finished_at.present?
+        "completed"
+      else
+        "processing"
+      end
+    else
+      "scheduled"
+    end
+    
     render json: { 
       job_id: job_id,
-      status: job_status['status'],
-      progress: job_status['progress']
+      status: status,
+      scheduled_at: job.scheduled_at,
+      finished_at: job.finished_at
     }
   end
 end

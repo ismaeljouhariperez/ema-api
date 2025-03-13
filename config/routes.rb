@@ -1,8 +1,8 @@
 Rails.application.routes.draw do
   mount_devise_token_auth_for 'User', at: 'auth'
   
-  # Sidekiq Web UI
-  mount Sidekiq::Web => '/sidekiq'
+  # Solid Queue Web UI
+  mount SolidQueue::Engine => '/solid_queue', as: :solid_queue
   
   # API routes
   namespace :api do
